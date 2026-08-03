@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -9,62 +10,13 @@ if __package__ in (None, ""):
 from app.services.pet_service import PetShopService
 
 
-ROUTINES = {
-    "2": {
-        "label": "Listar clientes",
-        "entity": "cliente",
-        "method": "listar_clientes",
-        "action": "list",
-    },
-    "3": {
-        "label": "Buscar cliente",
-        "entity": "cliente",
-        "method": "buscar_cliente",
-        "action": "get",
-    },
-    "4": {
-        "label": "Atualizar cliente",
-        "entity": "cliente",
-        "method": "atualizar_cliente",
-        "action": "update",
-    },
-    "5": {
-        "label": "Excluir cliente",
-        "entity": "cliente",
-        "method": "excluir_cliente",
-        "action": "delete",
-    },
-    "6": {
-        "label": "Cadastrar animal",
-        "entity": "animal",
-        "method": "cadastrar_animal",
-        "action": "create",
-    },
-    "7": {
-        "label": "Listar animais",
-        "entity": "animal",
-        "method": "listar_animais",
-        "action": "list",
-    },
-    "8": {
-        "label": "Buscar animal",
-        "entity": "animal",
-        "method": "buscar_animal",
-        "action": "get",
-    },
-    "9": {
-        "label": "Atualizar animal",
-        "entity": "animal",
-        "method": "atualizar_animal",
-        "action": "update",
-    },
-    "10": {
-        "label": "Excluir animal",
-        "entity": "animal",
-        "method": "excluir_animal",
-        "action": "delete",
-    },
-}
+def load_routes():
+    routes_file = Path(__file__).resolve().parent.parent / "data" / "rotas.json"
+    with routes_file.open("r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+ROUTINES = load_routes()
 
 
 def build_menu() -> str:

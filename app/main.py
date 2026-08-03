@@ -22,15 +22,16 @@ ROUTINES = load_routes()
 def build_menu() -> str:
     lines = [
         "+====================================+",
-        "|          PET SHOP SYSTEM           |",
+        "|            PET SHOP SYSTEM          |",
         "+====================================+",
         "| 1. Cadastrar cliente               |",
     ]
 
     for code, item in ROUTINES.items():
         label = item["label"]
-        padding = 35 - len(label)
-        lines.append(f"| {code}. {label}{' ' * padding}|")
+        output = f"{code}. {label}"
+        padding = 36 - len(output)
+        lines.append(f"| {output}{' ' * max(padding, 1)}|")
 
     lines.extend([
         "| 0. Sair                            |",
@@ -97,7 +98,8 @@ def handle_choice(service: PetShopService, option: str, data=None):
 
 def main() -> None:
     service = PetShopService()
-    print("Sistema Pet Shop inicializado.")
+    print("\nSistema Pet Shop inicializado.")
+    print("Use o menu abaixo para gerenciar clientes e animais.\n")
 
     while True:
         print(build_menu())

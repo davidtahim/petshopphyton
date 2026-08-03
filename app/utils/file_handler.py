@@ -5,6 +5,11 @@ from typing import Union
 
 def ensure_parent_dir(path: Union[str, Path]) -> Path:
     file_path = Path(path)
+
+    if not file_path.is_absolute():
+        project_root = Path(__file__).resolve().parents[2]
+        file_path = project_root / file_path
+
     file_path.parent.mkdir(parents=True, exist_ok=True)
     return file_path
 

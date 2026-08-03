@@ -2,4 +2,5 @@ from app.gui import PetShopApp
 
 
 if __name__ == "__main__":
-    PetShopApp()
+    app = PetShopApp()
+    app.mainloop()

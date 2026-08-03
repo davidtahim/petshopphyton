@@ -9,21 +9,82 @@ if __package__ in (None, ""):
 from app.services.pet_service import PetShopService
 
 
+ROUTINES = {
+    "2": {
+        "label": "Listar clientes",
+        "entity": "cliente",
+        "method": "listar_clientes",
+        "action": "list",
+    },
+    "3": {
+        "label": "Buscar cliente",
+        "entity": "cliente",
+        "method": "buscar_cliente",
+        "action": "get",
+    },
+    "4": {
+        "label": "Atualizar cliente",
+        "entity": "cliente",
+        "method": "atualizar_cliente",
+        "action": "update",
+    },
+    "5": {
+        "label": "Excluir cliente",
+        "entity": "cliente",
+        "method": "excluir_cliente",
+        "action": "delete",
+    },
+    "6": {
+        "label": "Cadastrar animal",
+        "entity": "animal",
+        "method": "cadastrar_animal",
+        "action": "create",
+    },
+    "7": {
+        "label": "Listar animais",
+        "entity": "animal",
+        "method": "listar_animais",
+        "action": "list",
+    },
+    "8": {
+        "label": "Buscar animal",
+        "entity": "animal",
+        "method": "buscar_animal",
+        "action": "get",
+    },
+    "9": {
+        "label": "Atualizar animal",
+        "entity": "animal",
+        "method": "atualizar_animal",
+        "action": "update",
+    },
+    "10": {
+        "label": "Excluir animal",
+        "entity": "animal",
+        "method": "excluir_animal",
+        "action": "delete",
+    },
+}
+
+
 def build_menu() -> str:
-    return """
-    --- PET SHOP ---
-    1. Cadastrar cliente
-    2. Listar clientes
-    3. Buscar cliente
-    4. Atualizar cliente
-    5. Excluir cliente
-    6. Cadastrar animal
-    7. Listar animais
-    8. Buscar animal
-    9. Atualizar animal
-    10. Excluir animal
-    0. Sair
-    """
+    lines = [
+        "+====================================+",
+        "|          PET SHOP SYSTEM           |",
+        "+====================================+",
+        "| 1. Cadastrar cliente               |",
+    ]
+
+    for code, item in ROUTINES.items():
+        label = item["label"]
+        padding = 35 - len(label)
+        lines.append(f"| {code}. {label}{' ' * padding}|")
+
+    lines.extend([
+        "| 0. Sair                            |",
+        "+====================================+",
+    ])
+    return "\n".join(lines)
 
 
 def display_clientes(clientes):
@@ -53,39 +114,31 @@ def handle_choice(service: PetShopService, option: str, data=None):
         nome, telefone, email = data
         return service.cadastrar_cliente(nome, telefone, email)
 
-    if option == "2":
-        return service.listar_clientes()
+    if option in ROUTINES:
+        method_name = ROUTINES[option]["method"]
+        method = getattr(service, method_name)
 
-    if option == "3":
-        cliente_id = int(data[0])
-        return service.buscar_cliente(cliente_id)
+        if ROUTINES[option]["action"] == "list":
+            return method()
 
-    if option == "4":
-        cliente_id, nome, telefone, email = data
-        return service.atualizar_cliente(int(cliente_id), nome, telefone, email)
+        if ROUTINES[option]["action"] == "get":
+            entity_id = int(data[0])
+            return method(entity_id)
 
-    if option == "5":
-        cliente_id = int(data[0])
-        return service.excluir_cliente(cliente_id)
+        if ROUTINES[option]["action"] == "delete":
+            entity_id = int(data[0])
+            return method(entity_id)
 
-    if option == "6":
-        nome, especie, raca, idade, dono_id = data
-        return service.cadastrar_animal(nome, especie, raca, int(idade), int(dono_id))
+        if ROUTINES[option]["action"] == "update":
+            if ROUTINES[option]["entity"] == "cliente":
+                cliente_id, nome, telefone, email = data
+                return method(int(cliente_id), nome, telefone, email)
+            animal_id, nome, especie, raca, idade, dono_id = data
+            return method(int(animal_id), nome, especie, raca, int(idade), int(dono_id))
 
-    if option == "7":
-        return service.listar_animais()
-
-    if option == "8":
-        animal_id = int(data[0])
-        return service.buscar_animal(animal_id)
-
-    if option == "9":
-        animal_id, nome, especie, raca, idade, dono_id = data
-        return service.atualizar_animal(int(animal_id), nome, especie, raca, int(idade), int(dono_id))
-
-    if option == "10":
-        animal_id = int(data[0])
-        return service.excluir_animal(animal_id)
+        if ROUTINES[option]["action"] == "create":
+            nome, especie, raca, idade, dono_id = data
+            return method(nome, especie, raca, int(idade), int(dono_id))
 
     return None
 

@@ -7,160 +7,117 @@ from app.services.pet_service import PetShopService
 class PetShopApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Sistema Pet Shop")
-        self.geometry("980x660")
-        self.minsize(860, 520)
-        self.configure(bg="#eef4ff")
-
-        style = ttk.Style(self)
-        style.theme_use("clam")
-        style.configure("Pet.TFrame", background="#eef4ff")
-        style.configure("Header.TLabel", background="#eef4ff", foreground="#0f172a", font=("Arial", 22, "bold"))
-        style.configure("Subtitle.TLabel", background="#eef4ff", foreground="#475569", font=("Arial", 11))
-        style.configure("Section.TLabel", background="#eef4ff", foreground="#1f2937", font=("Arial", 10, "bold"))
-        style.configure("Accent.TButton", font=("Arial", 10, "bold"))
-        style.configure("Primary.TButton", font=("Arial", 11, "bold"), foreground="#ffffff")
-        style.map(
-            "Primary.TButton",
-            background=[("active", "#2563eb"), ("pressed", "#1d4ed8")],
-            foreground=[("active", "#ffffff"), ("pressed", "#ffffff")],
-        )
-        style.map(
-            "Accent.TButton",
-            background=[("active", "#0f766e"), ("pressed", "#115e59")],
-            foreground=[("active", "#ffffff"), ("pressed", "#ffffff")],
-        )
-        style.configure("Treeview", rowheight=26, fieldbackground="#ffffff", background="#ffffff", foreground="#1f2937")
-        style.map("Treeview", background=[("selected", "#c7d2fe")], foreground=[("selected", "#111827")])
+        self.title("Pet Shop")
+        self.geometry("900x600")
+        self.minsize(760, 500)
+        self.configure(bg="#f4f7fb")
 
         self.service = PetShopService()
 
-        self.landing_frame = ttk.Frame(self, padding=28, style="Pet.TFrame")
-        self.landing_frame.pack(fill="both", expand=True)
+        self.home = tk.Frame(self, bg="#f4f7fb", padx=30, pady=30)
+        self.home.pack(fill="both", expand=True)
 
-        logo = ttk.Label(
-            self.landing_frame,
+        title = tk.Label(
+            self.home,
             text="🐾 Pet Shop",
-            style="Header.TLabel",
-            justify="center",
+            font=("Arial", 26, "bold"),
+            bg="#f4f7fb",
+            fg="#1f2937",
         )
-        logo.pack(pady=(30, 10))
+        title.pack(pady=(20, 10))
 
-        subtitle = ttk.Label(
-            self.landing_frame,
-            text="Gestão de clientes e animais",
-            style="Subtitle.TLabel",
+        subtitle = tk.Label(
+            self.home,
+            text="Sistema simples de gestão",
+            font=("Arial", 12),
+            bg="#f4f7fb",
+            fg="#475569",
         )
-        subtitle.pack(pady=(0, 25))
+        subtitle.pack(pady=(0, 30))
 
-        self.menu_buttons = ttk.Frame(self.landing_frame, style="Pet.TFrame")
-        self.menu_buttons.pack(pady=12)
+        button_frame = tk.Frame(self.home, bg="#f4f7fb")
+        button_frame.pack()
 
-        btn_clientes = ttk.Button(
-            self.menu_buttons,
+        tk.Button(
+            button_frame,
             text="Clientes",
-            command=lambda: self.open_section("clientes"),
-            style="Primary.TButton",
-            width=22,
-        )
-        btn_clientes.grid(row=0, column=0, padx=12, pady=10)
+            width=20,
+            height=2,
+            bg="#2563eb",
+            fg="white",
+            font=("Arial", 12, "bold"),
+            command=self.show_clientes,
+        ).grid(row=0, column=0, padx=12, pady=12)
 
-        btn_animais = ttk.Button(
-            self.menu_buttons,
+        tk.Button(
+            button_frame,
             text="Animais",
-            command=lambda: self.open_section("animais"),
-            style="Accent.TButton",
-            width=22,
-        )
-        btn_animais.grid(row=0, column=1, padx=12, pady=10)
+            width=20,
+            height=2,
+            bg="#0f766e",
+            fg="white",
+            font=("Arial", 12, "bold"),
+            command=self.show_animais,
+        ).grid(row=0, column=1, padx=12, pady=12)
 
-        btn_sair = ttk.Button(
-            self.menu_buttons,
+        tk.Button(
+            button_frame,
             text="Sair",
+            width=42,
+            height=2,
+            bg="#e2e8f0",
+            fg="#111827",
+            font=("Arial", 10, "bold"),
             command=self.destroy,
-            width=22,
+        ).grid(row=1, column=0, columnspan=2, sticky="ew", padx=12, pady=(8, 0))
+
+        self.clientes_page = tk.Frame(self, bg="#f4f7fb", padx=18, pady=18)
+        self.animais_page = tk.Frame(self, bg="#f4f7fb", padx=18, pady=18)
+
+        self._build_clientes_page()
+        self._build_animais_page()
+
+        self.home.pack(fill="both", expand=True)
+        self.clientes_page.pack_forget()
+        self.animais_page.pack_forget()
+
+    def _build_clientes_page(self):
+        title = tk.Label(
+            self.clientes_page,
+            text="Clientes",
+            font=("Arial", 20, "bold"),
+            bg="#f4f7fb",
+            fg="#111827",
         )
-        btn_sair.grid(row=1, column=0, columnspan=2, padx=12, pady=(8, 10), sticky="ew")
+        title.pack(anchor="w", pady=(8, 12))
 
-        self.content = ttk.Frame(self, style="Pet.TFrame")
-        self.content.pack(fill="both", expand=True)
-
-        self.notebook = ttk.Notebook(self.content)
-        self.notebook.pack(fill="both", expand=True, padx=16, pady=(0, 10))
-
-        self.cliente_tab = ttk.Frame(self.notebook, padding=12, style="Pet.TFrame")
-        self.animal_tab = ttk.Frame(self.notebook, padding=12, style="Pet.TFrame")
-        self.notebook.add(self.cliente_tab, text="Clientes")
-        self.notebook.add(self.animal_tab, text="Animais")
-
-        self.status_var = tk.StringVar(value="Carregando registros...")
-        status = ttk.Label(
-            self.content,
-            textvariable=self.status_var,
-            style="Section.TLabel",
-            padding=(18, 0, 18, 12),
-        )
-        status.pack(fill="x")
-
-        self._build_cliente_tab()
-        self._build_animal_tab()
-        self.refresh_all()
-
-        self.notebook.pack_forget()
-        self.content.pack_forget()
-
-    def open_section(self, section_name):
-        self.landing_frame.pack_forget()
-        self.content.pack(fill="both", expand=True)
-        self.notebook.pack(fill="both", expand=True, padx=16, pady=(0, 10))
-
-        if section_name == "clientes":
-            self.notebook.select(self.cliente_tab)
-        else:
-            self.notebook.select(self.animal_tab)
-
-    def _build_cliente_tab(self):
-        content = ttk.Frame(self.cliente_tab, style="Pet.TFrame")
-        content.pack(fill="both", expand=True)
-
-        form = ttk.Frame(content, padding=(8, 8, 8, 6), style="Pet.TFrame")
-        form.pack(fill="x")
-
-        fields = [
-            ("ID", 0),
-            ("Nome", 1),
-            ("Telefone", 2),
-            ("Email", 3),
-        ]
+        form = tk.Frame(self.clientes_page, bg="#f4f7fb")
+        form.pack(fill="x", pady=(0, 10))
 
         self.cliente_entries = {}
-        for label, row in fields:
-            lbl = ttk.Label(form, text=f"{label}:", style="Section.TLabel")
-            lbl.grid(row=row, column=0, sticky="w", padx=(0, 10), pady=6)
-            entry = ttk.Entry(form, width=48)
-            entry.grid(row=row, column=1, sticky="ew", pady=6)
+        labels = ["ID", "Nome", "Telefone", "Email"]
+        for idx, label in enumerate(labels):
+            tk.Label(form, text=f"{label}:", bg="#f4f7fb", font=("Arial", 10, "bold")).grid(row=idx, column=0, sticky="w", padx=(0, 8), pady=6)
+            entry = tk.Entry(form, width=35, font=("Arial", 10))
+            entry.grid(row=idx, column=1, sticky="ew", padx=(0, 10), pady=6)
             self.cliente_entries[label] = entry
-
         form.columnconfigure(1, weight=1)
 
-        buttons = [
+        actions = tk.Frame(self.clientes_page, bg="#f4f7fb")
+        actions.pack(fill="x", pady=(0, 10))
+        commands = [
             ("Salvar", self.salvar_cliente),
             ("Buscar", self.buscar_cliente),
             ("Atualizar", self.atualizar_cliente),
             ("Excluir", self.excluir_cliente),
-            ("Listar", self.listar_clientes),
+            ("Voltar", self.show_home),
         ]
-
-        buttons_frame = ttk.Frame(content, padding=(8, 2, 8, 8), style="Pet.TFrame")
-        buttons_frame.pack(fill="x")
-        for idx, (text, command) in enumerate(buttons):
-            btn = ttk.Button(buttons_frame, text=text, command=command, style="Accent.TButton")
-            btn.grid(row=0, column=idx, padx=(0, 8), pady=6, sticky="ew")
-        for i in range(len(buttons)):
-            buttons_frame.columnconfigure(i, weight=1)
+        for idx, (text, command) in enumerate(commands):
+            cor = "#2563eb" if text != "Voltar" else "#94a3b8"
+            tk.Button(actions, text=text, width=12, bg=cor, fg="white", font=("Arial", 10, "bold"), command=command).grid(row=0, column=idx, padx=6)
 
         self.clientes_tree = ttk.Treeview(
-            content,
+            self.clientes_page,
             columns=("id", "nome", "telefone", "email"),
             show="headings",
             height=12,
@@ -169,57 +126,50 @@ class PetShopApp(tk.Tk):
         self.clientes_tree.heading("nome", text="Nome")
         self.clientes_tree.heading("telefone", text="Telefone")
         self.clientes_tree.heading("email", text="Email")
-        self.clientes_tree.column("id", width=70, anchor="center")
-        self.clientes_tree.column("nome", width=220)
-        self.clientes_tree.column("telefone", width=160)
-        self.clientes_tree.column("email", width=290)
+        self.clientes_tree.column("id", width=60, anchor="center")
+        self.clientes_tree.column("nome", width=180)
+        self.clientes_tree.column("telefone", width=140)
+        self.clientes_tree.column("email", width=220)
         self.clientes_tree.bind("<<TreeviewSelect>>", self.on_select_cliente)
-        self.clientes_tree.pack(fill="both", expand=True, padx=8, pady=(0, 6))
+        self.clientes_tree.pack(fill="both", expand=True)
 
-    def _build_animal_tab(self):
-        content = ttk.Frame(self.animal_tab, style="Pet.TFrame")
-        content.pack(fill="both", expand=True)
+    def _build_animais_page(self):
+        title = tk.Label(
+            self.animais_page,
+            text="Animais",
+            font=("Arial", 20, "bold"),
+            bg="#f4f7fb",
+            fg="#111827",
+        )
+        title.pack(anchor="w", pady=(8, 12))
 
-        form = ttk.Frame(content, padding=(8, 8, 8, 6), style="Pet.TFrame")
-        form.pack(fill="x")
-
-        fields = [
-            ("ID", 0),
-            ("Nome", 1),
-            ("Espécie", 2),
-            ("Raça", 3),
-            ("Idade", 4),
-            ("Dono ID", 5),
-        ]
+        form = tk.Frame(self.animais_page, bg="#f4f7fb")
+        form.pack(fill="x", pady=(0, 10))
 
         self.animal_entries = {}
-        for label, row in fields:
-            lbl = ttk.Label(form, text=f"{label}:", style="Section.TLabel")
-            lbl.grid(row=row, column=0, sticky="w", padx=(0, 10), pady=6)
-            entry = ttk.Entry(form, width=48)
-            entry.grid(row=row, column=1, sticky="ew", pady=6)
+        labels = ["ID", "Nome", "Espécie", "Raça", "Idade", "Dono ID"]
+        for idx, label in enumerate(labels):
+            tk.Label(form, text=f"{label}:", bg="#f4f7fb", font=("Arial", 10, "bold")).grid(row=idx, column=0, sticky="w", padx=(0, 8), pady=6)
+            entry = tk.Entry(form, width=35, font=("Arial", 10))
+            entry.grid(row=idx, column=1, sticky="ew", padx=(0, 10), pady=6)
             self.animal_entries[label] = entry
-
         form.columnconfigure(1, weight=1)
 
-        buttons = [
+        actions = tk.Frame(self.animais_page, bg="#f4f7fb")
+        actions.pack(fill="x", pady=(0, 10))
+        commands = [
             ("Salvar", self.salvar_animal),
             ("Buscar", self.buscar_animal),
             ("Atualizar", self.atualizar_animal),
             ("Excluir", self.excluir_animal),
-            ("Listar", self.listar_animais),
+            ("Voltar", self.show_home),
         ]
-
-        buttons_frame = ttk.Frame(content, padding=(8, 2, 8, 8), style="Pet.TFrame")
-        buttons_frame.pack(fill="x")
-        for idx, (text, command) in enumerate(buttons):
-            btn = ttk.Button(buttons_frame, text=text, command=command, style="Accent.TButton")
-            btn.grid(row=0, column=idx, padx=(0, 8), pady=6, sticky="ew")
-        for i in range(len(buttons)):
-            buttons_frame.columnconfigure(i, weight=1)
+        for idx, (text, command) in enumerate(commands):
+            cor = "#0f766e" if text != "Voltar" else "#94a3b8"
+            tk.Button(actions, text=text, width=12, bg=cor, fg="white", font=("Arial", 10, "bold"), command=command).grid(row=0, column=idx, padx=6)
 
         self.animais_tree = ttk.Treeview(
-            content,
+            self.animais_page,
             columns=("id", "nome", "especie", "raca", "idade", "dono_id"),
             show="headings",
             height=12,
@@ -230,14 +180,31 @@ class PetShopApp(tk.Tk):
         self.animais_tree.heading("raca", text="Raça")
         self.animais_tree.heading("idade", text="Idade")
         self.animais_tree.heading("dono_id", text="Dono ID")
-        self.animais_tree.column("id", width=70, anchor="center")
-        self.animais_tree.column("nome", width=150)
-        self.animais_tree.column("especie", width=130)
-        self.animais_tree.column("raca", width=140)
-        self.animais_tree.column("idade", width=90, anchor="center")
-        self.animais_tree.column("dono_id", width=100, anchor="center")
+        self.animais_tree.column("id", width=60, anchor="center")
+        self.animais_tree.column("nome", width=140)
+        self.animais_tree.column("especie", width=120)
+        self.animais_tree.column("raca", width=130)
+        self.animais_tree.column("idade", width=80, anchor="center")
+        self.animais_tree.column("dono_id", width=90, anchor="center")
         self.animais_tree.bind("<<TreeviewSelect>>", self.on_select_animal)
-        self.animais_tree.pack(fill="both", expand=True, padx=8, pady=(0, 6))
+        self.animais_tree.pack(fill="both", expand=True)
+
+    def show_home(self):
+        self.home.pack(fill="both", expand=True)
+        self.clientes_page.pack_forget()
+        self.animais_page.pack_forget()
+
+    def show_clientes(self):
+        self.home.pack_forget()
+        self.clientes_page.pack(fill="both", expand=True)
+        self.animais_page.pack_forget()
+        self.refresh_clientes()
+
+    def show_animais(self):
+        self.home.pack_forget()
+        self.animais_page.pack(fill="both", expand=True)
+        self.clientes_page.pack_forget()
+        self.refresh_animais()
 
     def reset_cliente_fields(self):
         for key in self.cliente_entries:
@@ -270,7 +237,7 @@ class PetShopApp(tk.Tk):
         try:
             cliente = self.service.cadastrar_cliente(dados["nome"], dados["telefone"], dados["email"])
             messagebox.showinfo("Sucesso", f"Cliente cadastrado com ID {cliente['id']}")
-            self.refresh_all()
+            self.refresh_clientes()
             self.reset_cliente_fields()
         except ValueError as exc:
             messagebox.showerror("Erro", str(exc))
@@ -278,7 +245,7 @@ class PetShopApp(tk.Tk):
     def buscar_cliente(self):
         cliente_id = self.cliente_entries["ID"].get().strip()
         if not cliente_id:
-            self.listar_clientes()
+            self.refresh_clientes()
             return
         cliente = self.service.buscar_cliente(int(cliente_id))
         if cliente is None:
@@ -298,7 +265,7 @@ class PetShopApp(tk.Tk):
         try:
             cliente = self.service.atualizar_cliente(int(dados["id"]), dados["nome"], dados["telefone"], dados["email"])
             messagebox.showinfo("Sucesso", f"Cliente atualizado: {cliente['nome']}")
-            self.refresh_all()
+            self.refresh_clientes()
             self.reset_cliente_fields()
         except ValueError as exc:
             messagebox.showerror("Erro", str(exc))
@@ -312,20 +279,14 @@ class PetShopApp(tk.Tk):
         if ok:
             self.service.excluir_cliente(int(cliente_id))
             messagebox.showinfo("Sucesso", "Cliente excluído.")
-            self.refresh_all()
+            self.refresh_clientes()
             self.reset_cliente_fields()
 
-    def listar_clientes(self):
-        clientes = self.service.listar_clientes()
+    def refresh_clientes(self):
         for item in self.clientes_tree.get_children():
             self.clientes_tree.delete(item)
-
-        for cliente in clientes:
-            self.clientes_tree.insert(
-                "",
-                tk.END,
-                values=(cliente.id, cliente.nome, cliente.telefone, cliente.email),
-            )
+        for cliente in self.service.listar_clientes():
+            self.clientes_tree.insert("", tk.END, values=(cliente.id, cliente.nome, cliente.telefone, cliente.email))
 
     def on_select_cliente(self, event):
         item = self.clientes_tree.selection()
@@ -349,7 +310,7 @@ class PetShopApp(tk.Tk):
                 int(dados["dono_id"]),
             )
             messagebox.showinfo("Sucesso", f"Animal cadastrado com ID {animal['id']}")
-            self.refresh_all()
+            self.refresh_animais()
             self.reset_animal_fields()
         except ValueError as exc:
             messagebox.showerror("Erro", str(exc))
@@ -357,7 +318,7 @@ class PetShopApp(tk.Tk):
     def buscar_animal(self):
         animal_id = self.animal_entries["ID"].get().strip()
         if not animal_id:
-            self.listar_animais()
+            self.refresh_animais()
             return
         animal = self.service.buscar_animal(int(animal_id))
         if animal is None:
@@ -386,7 +347,7 @@ class PetShopApp(tk.Tk):
                 int(dados["dono_id"]),
             )
             messagebox.showinfo("Sucesso", f"Animal atualizado: {animal['nome']}")
-            self.refresh_all()
+            self.refresh_animais()
             self.reset_animal_fields()
         except ValueError as exc:
             messagebox.showerror("Erro", str(exc))
@@ -400,20 +361,14 @@ class PetShopApp(tk.Tk):
         if ok:
             self.service.excluir_animal(int(animal_id))
             messagebox.showinfo("Sucesso", "Animal excluído.")
-            self.refresh_all()
+            self.refresh_animais()
             self.reset_animal_fields()
 
-    def listar_animais(self):
-        animais = self.service.listar_animais()
+    def refresh_animais(self):
         for item in self.animais_tree.get_children():
             self.animais_tree.delete(item)
-
-        for animal in animais:
-            self.animais_tree.insert(
-                "",
-                tk.END,
-                values=(animal.id, animal.nome, animal.especie, animal.raca, animal.idade, animal.dono_id),
-            )
+        for animal in self.service.listar_animais():
+            self.animais_tree.insert("", tk.END, values=(animal.id, animal.nome, animal.especie, animal.raca, animal.idade, animal.dono_id))
 
     def on_select_animal(self, event):
         item = self.animais_tree.selection()
@@ -428,13 +383,7 @@ class PetShopApp(tk.Tk):
         self.animal_entries["Idade"].insert(0, str(values[4]))
         self.animal_entries["Dono ID"].insert(0, str(values[5]))
 
-    def refresh_all(self):
-        self.listar_clientes()
-        self.listar_animais()
-        clientes = self.service.listar_clientes()
-        animais = self.service.listar_animais()
-        self.status_var.set(f"Clientes: {len(clientes)} | Animais: {len(animais)}")
-
 
 if __name__ == "__main__":
-    PetShopApp().mainloop()
+    app = PetShopApp()
+    app.mainloop()

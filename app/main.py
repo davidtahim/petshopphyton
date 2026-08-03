@@ -1,6 +1,163 @@
+from app.services.pet_service import PetShopService
+
+
+def build_menu() -> str:
+    return """
+    --- PET SHOP ---
+    1. Cadastrar cliente
+    2. Listar clientes
+    3. Buscar cliente
+    4. Atualizar cliente
+    5. Excluir cliente
+    6. Cadastrar animal
+    7. Listar animais
+    8. Buscar animal
+    9. Atualizar animal
+    10. Excluir animal
+    0. Sair
+    """
+
+
+def display_clientes(clientes):
+    if not clientes:
+        print("Nenhum cliente cadastrado.")
+        return
+
+    print("\nClientes:")
+    for cliente in clientes:
+        print(f"- ID {cliente.id}: {cliente.nome} | {cliente.telefone} | {cliente.email}")
+
+
+def display_animais(animais):
+    if not animais:
+        print("Nenhum animal cadastrado.")
+        return
+
+    print("\nAnimais:")
+    for animal in animais:
+        print(f"- ID {animal.id}: {animal.nome} | {animal.especie} | {animal.raca} | {animal.idade} anos | dono_id={animal.dono_id}")
+
+
+def handle_choice(service: PetShopService, option: str, data=None):
+    data = data or []
+
+    if option == "1":
+        nome, telefone, email = data
+        return service.cadastrar_cliente(nome, telefone, email)
+
+    if option == "2":
+        return service.listar_clientes()
+
+    if option == "3":
+        cliente_id = int(data[0])
+        return service.buscar_cliente(cliente_id)
+
+    if option == "4":
+        cliente_id, nome, telefone, email = data
+        return service.atualizar_cliente(int(cliente_id), nome, telefone, email)
+
+    if option == "5":
+        cliente_id = int(data[0])
+        return service.excluir_cliente(cliente_id)
+
+    if option == "6":
+        nome, especie, raca, idade, dono_id = data
+        return service.cadastrar_animal(nome, especie, raca, int(idade), int(dono_id))
+
+    if option == "7":
+        return service.listar_animais()
+
+    if option == "8":
+        animal_id = int(data[0])
+        return service.buscar_animal(animal_id)
+
+    if option == "9":
+        animal_id, nome, especie, raca, idade, dono_id = data
+        return service.atualizar_animal(int(animal_id), nome, especie, raca, int(idade), int(dono_id))
+
+    if option == "10":
+        animal_id = int(data[0])
+        return service.excluir_animal(animal_id)
+
+    return None
+
+
 def main() -> None:
+    service = PetShopService()
     print("Sistema Pet Shop inicializado.")
-    print("Estrutura base pronta para CRUD.")
+
+    while True:
+        print(build_menu())
+        option = input("Escolha uma opção: ").strip()
+
+        if option == "0":
+            print("Saindo do sistema...")
+            break
+
+        if option == "1":
+            nome = input("Nome: ").strip()
+            telefone = input("Telefone: ").strip()
+            email = input("Email: ").strip()
+            cliente = handle_choice(service, option, [nome, telefone, email])
+            print("Cliente cadastrado:", cliente)
+
+        elif option == "2":
+            clientes = handle_choice(service, option)
+            display_clientes(clientes)
+
+        elif option == "3":
+            cliente_id = input("ID do cliente: ").strip()
+            cliente = handle_choice(service, option, [cliente_id])
+            print("Cliente encontrado:", cliente)
+
+        elif option == "4":
+            cliente_id = input("ID do cliente: ").strip()
+            nome = input("Novo nome: ").strip()
+            telefone = input("Novo telefone: ").strip()
+            email = input("Novo email: ").strip()
+            cliente = handle_choice(service, option, [cliente_id, nome, telefone, email])
+            print("Cliente atualizado:", cliente)
+
+        elif option == "5":
+            cliente_id = input("ID do cliente: ").strip()
+            removido = handle_choice(service, option, [cliente_id])
+            print("Cliente removido:", removido)
+
+        elif option == "6":
+            nome = input("Nome do animal: ").strip()
+            especie = input("Espécie: ").strip()
+            raca = input("Raça: ").strip()
+            idade = input("Idade: ").strip()
+            dono_id = input("ID do dono: ").strip()
+            animal = handle_choice(service, option, [nome, especie, raca, idade, dono_id])
+            print("Animal cadastrado:", animal)
+
+        elif option == "7":
+            animais = handle_choice(service, option)
+            display_animais(animais)
+
+        elif option == "8":
+            animal_id = input("ID do animal: ").strip()
+            animal = handle_choice(service, option, [animal_id])
+            print("Animal encontrado:", animal)
+
+        elif option == "9":
+            animal_id = input("ID do animal: ").strip()
+            nome = input("Novo nome: ").strip()
+            especie = input("Nova espécie: ").strip()
+            raca = input("Nova raça: ").strip()
+            idade = input("Nova idade: ").strip()
+            dono_id = input("Novo ID do dono: ").strip()
+            animal = handle_choice(service, option, [animal_id, nome, especie, raca, idade, dono_id])
+            print("Animal atualizado:", animal)
+
+        elif option == "10":
+            animal_id = input("ID do animal: ").strip()
+            removido = handle_choice(service, option, [animal_id])
+            print("Animal removido:", removido)
+
+        else:
+            print("Opção inválida.")
 
 
 if __name__ == "__main__":
